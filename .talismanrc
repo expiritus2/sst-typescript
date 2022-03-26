@@ -1,0 +1,4 @@
+scopeconfig:
+  - scope: node
+threshold: medium
+fileignoreconfig:
