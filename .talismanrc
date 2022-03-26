@@ -2,3 +2,7 @@ scopeconfig:
   - scope: node
 threshold: medium
 fileignoreconfig:
+  - filename: frontend/src/config.ts
+    checksum: 1b46fb5a79e07bc76a9fce1632a28807d263730d3134ef1f88102bf13002b911
+  - filename: frontend/public/index.html
+    checksum: 125339753071660f1928403e41d1c5e5436766ae81639fe40e7513c2caf02e28
