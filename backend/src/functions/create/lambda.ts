@@ -11,12 +11,13 @@ type CreateBody = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const main = apiHandler(async (event: any) => {
     const data = JSON.parse(event.body) as CreateBody;
+    console.log(event);
     const params: AWS.DynamoDB.DocumentClient.PutItemInput = {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         TableName: process.env.TABLE_NAME!,
         Item: {
             // The attributes of the item to be created
-            userId: event.requestContext.authorizer.iam.cognitoIdentity.identityId, // The id of the author
+            userId: event.requestContext.authorizer.jwt.claims.username || event.requestContext.authorizer.jwt.claims['cognito:username'], // The id of the author
             noteId: uuid.v1(), // A unique uuid
             content: data.content, // Parsed from request body
             attachment: data.attachment, // Parsed from request body

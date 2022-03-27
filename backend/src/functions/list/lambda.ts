@@ -4,6 +4,7 @@ import * as AWS from 'aws-sdk';
 
 // eslint-disable-next-line
 export const main = apiHandler(async (event: any) => {
+    console.log(event.requestContext.authorizer.jwt.claims);
     const params: AWS.DynamoDB.DocumentClient.QueryInput = {
         TableName: process.env.TABLE_NAME!,
         // 'KeyConditionExpression' defines the condition for the query
@@ -13,7 +14,7 @@ export const main = apiHandler(async (event: any) => {
         // 'ExpressionAttributeValues' defines the value in the condition
         // - ':userId': defines 'userId' to be the id of the author
         ExpressionAttributeValues: {
-            ":userId": event.requestContext.authorizer.iam.cognitoIdentity.identityId,
+            ":userId": event.requestContext.authorizer.jwt.claims.username || event.requestContext.authorizer.jwt.claims['cognito:username'],
         },
     };
 

@@ -12,7 +12,7 @@ export default function Settings() {
     const history = useHistory();
     const [isLoading, setIsLoading] = useState(false);
 
-    const stripePromise = loadStripe(config.STRIPE_KEY);
+    const stripePromise = loadStripe(config.STRIPE_PUBLIC_KEY!);
 
     function billUser(details: any) {
         return API.post("notes", "/billing", {

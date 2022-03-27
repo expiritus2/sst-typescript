@@ -1,15 +1,15 @@
-import * as sst from '@serverless-stack/resources';
+import { Stack, StackProps, App, TableFieldType } from '@serverless-stack/resources';
 import { HttpMethods } from 'aws-cdk-lib/aws-s3';
 import { Bucket, Table } from '@serverless-stack/resources';
 
-export default class StorageStack extends sst.Stack {
+export default class StorageStack extends Stack {
     public bucket: Bucket;
     public table: Table;
 
-    constructor(scope: sst.App, id: string, props?: sst.StackProps) {
+    constructor(scope: App, id: string, props?: StackProps) {
         super(scope, id, props);
 
-        this.bucket = new sst.Bucket(this, 'Uploads', {
+        this.bucket = new Bucket(this, 'Uploads', {
             s3Bucket: {
                 // Allow client side access to the bucket from a different domain
                 cors: [
@@ -23,10 +23,10 @@ export default class StorageStack extends sst.Stack {
             },
         });
 
-        this.table = new sst.Table(this, 'Notes', {
+        this.table = new Table(this, 'Notes', {
             fields: {
-                userId: sst.TableFieldType.STRING,
-                noteId: sst.TableFieldType.STRING,
+                userId: TableFieldType.STRING,
+                noteId: TableFieldType.STRING,
             },
             primaryIndex: { partitionKey: 'userId', sortKey: 'noteId' }
         });

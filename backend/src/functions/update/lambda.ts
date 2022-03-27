@@ -7,10 +7,11 @@ import * as AWS from 'aws-sdk';
 export const main = apiHandler(async (event: APIGatewayProxyEvent): Promise<LambdaBody> => {
     const data = JSON.parse(event.body || '');
     const params: AWS.DynamoDB.DocumentClient.UpdateItemInput = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         TableName: process.env.TABLE_NAME!,
         // 'Key' defines the partition key and sort key of the item to be updated
         Key: {
-            userId: event?.requestContext?.authorizer?.iam.cognitoIdentity.identityId, // The id of the author
+            userId: event?.requestContext?.authorizer?.jwt.claims.username || event?.requestContext?.authorizer?.jwt.claims['cognito:username'], // The id of the author
             noteId: event?.pathParameters?.id, // The id of the note from the path
         },
         // 'UpdateExpression' defines the attributes to be updated

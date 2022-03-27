@@ -29,6 +29,7 @@ export default function apiHandler<T extends APIGatewayProxyEvent>(lambda: any) 
             headers: {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Credentials": true,
+                "Content-Type": "application/json"
             },
         };
     };

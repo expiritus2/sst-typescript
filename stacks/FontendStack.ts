@@ -1,20 +1,23 @@
-import * as sst from "@serverless-stack/resources";
+import { Bucket, StackProps, Stack, App, Api, ReactStaticSite } from "@serverless-stack/resources";
 import * as path from 'path';
+import { CfnIdentityPool, IUserPool, IUserPoolClient } from 'aws-cdk-lib/aws-cognito';
 
 type LocalProps = {
-    api: sst.Api;
-    auth: sst.Auth;
-    bucket: sst.Bucket;
+    userPool: IUserPool;
+    userPoolClient: IUserPoolClient;
+    cognitoCfnIdentityPool: CfnIdentityPool;
+    api: Api;
+    bucket: Bucket;
 }
 
-export default class FrontendStack extends sst.Stack {
-    constructor(scope: sst.App, id: string, props?: sst.StackProps & LocalProps) {
+export default class FrontendStack extends Stack {
+    constructor(scope: App, id: string, props?: StackProps & LocalProps) {
         super(scope, id, props);
 
-        const { api, auth, bucket } = props as LocalProps;
+        const { api, userPool, userPoolClient, bucket, cognitoCfnIdentityPool } = props as LocalProps;
 
         // Define our React app
-        const site = new sst.ReactStaticSite(this, "ReactSite", {
+        const site = new ReactStaticSite(this, "ReactSite", {
             customDomain:
                 scope.stage === "prod"
                     ? {
@@ -28,9 +31,9 @@ export default class FrontendStack extends sst.Stack {
                 REACT_APP_API_URL: api.customDomainUrl || api.url,
                 REACT_APP_REGION: scope.region,
                 REACT_APP_BUCKET: bucket.bucketName,
-                REACT_APP_USER_POOL_ID: auth.cognitoUserPool!.userPoolId,
-                REACT_APP_IDENTITY_POOL_ID: auth.cognitoCfnIdentityPool.ref,
-                REACT_APP_USER_POOL_CLIENT_ID: auth.cognitoUserPoolClient!.userPoolClientId,
+                REACT_APP_USER_POOL_ID: userPool.userPoolId,
+                REACT_APP_IDENTITY_POOL_ID: cognitoCfnIdentityPool.ref,
+                REACT_APP_USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
             },
         });
 

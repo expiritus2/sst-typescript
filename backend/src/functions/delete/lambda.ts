@@ -6,7 +6,7 @@ export const main = apiHandler(async (event: any) => {
         TableName: process.env.TABLE_NAME!,
         // 'Key' defines the partition key and sort key of the item to be removed
         Key: {
-            userId: event.requestContext.authorizer.iam.cognitoIdentity.identityId, // The id of the author
+            userId: event.requestContext.authorizer.jwt.claims.username || event.requestContext.authorizer.jwt.claims['cognito:username'], // The id of the author
             noteId: event.pathParameters.id, // The id of the note from the path
         },
     };

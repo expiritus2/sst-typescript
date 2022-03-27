@@ -1,49 +1,71 @@
-import * as iam from "aws-cdk-lib/aws-iam";
-import * as sst from "@serverless-stack/resources";
+import { Stack, Bucket, App, StackProps } from "@serverless-stack/resources";
+import { UserPool, UserPoolClient, IUserPool, IUserPoolClient, CfnIdentityPool } from "aws-cdk-lib/aws-cognito";
 
 type LocalProps = {
-    api: sst.Api;
-    bucket: sst.Bucket;
+    bucket: Bucket;
 }
 
-export default class AuthStack extends sst.Stack {
-    // Public reference to the auth instance
-    public auth: sst.Auth;
+export default class AuthStack extends Stack {
+    public userPool: IUserPool;
+    public userPoolClient: IUserPoolClient;
+    public cognitoCfnIdentityPool: CfnIdentityPool;
 
-    constructor(scope: sst.App, id: string, props: sst.StackProps & LocalProps) {
+    constructor(scope: App, id: string, props: StackProps & LocalProps) {
         super(scope, id, props);
 
-        const { api, bucket } = props as LocalProps;
-
-        // Create a Cognito User Pool and Identity Pool
-        this.auth = new sst.Auth(this, "Auth", {
-            cognito: {
-                userPool: {
-                    // Users can login with their email and password
-                    signInAliases: { email: true },
-                },
-            },
+        // Create User Pool
+        this.userPool = new UserPool(this, "NotesUserPool", {
+            selfSignUpEnabled: true,
+            signInAliases: { email: true },
+            signInCaseSensitive: false,
+            userPoolName: 'Notes User Pool'
         });
 
-        this.auth.attachPermissionsForAuthUsers([
-            // Allow access to the API
-            api,
-            // Policy granting access to a specific folder in the bucket
-            new iam.PolicyStatement({
-                actions: ["s3:*"],
-                effect: iam.Effect.ALLOW,
-                resources: [
-                    bucket.bucketArn + "/private/${cognito-identity.amazonaws.com:sub}/*",
-                ],
-            }),
-        ]);
+        // Create User Pool Client
+        this.userPoolClient = new UserPoolClient(this, "NotesUserPoolClient", {
+            userPool: this.userPool,
+            authFlows: { userPassword: true },
+            userPoolClientName: 'Notes User Pool Client',
+        });
+
+        this.cognitoCfnIdentityPool = new CfnIdentityPool(this, "NotesIdentityPool", {
+            allowUnauthenticatedIdentities: false,
+            identityPoolName: 'Notes Identity Pool',
+        });
+
+        // const { bucket } = props as LocalProps;
+
+        // Create a Cognito User Pool and Identity Pool
+        // this.auth = new Auth(this, "Auth", {
+        //     cognito: {
+        //         userPool: {
+        //             // Users can login with their email and password
+        //             signInAliases: { email: true },
+        //         },
+        //         // triggers: {
+        //         //     preAuthentication: "src/preAuthentication.main",
+        //         //     postAuthentication: "src/postAuthentication.main",
+        //         // },
+        //     },
+        // });
+
+        // this.auth.attachPermissionsForAuthUsers([
+        //     // Policy granting access to a specific folder in the bucket
+        //     new iam.PolicyStatement({
+        //         actions: ["s3:*"],
+        //         effect: iam.Effect.ALLOW,
+        //         resources: [
+        //             bucket.bucketArn + "/private/${cognito-identity.amazonaws.com:sub}/*",
+        //         ],
+        //     }),
+        // ]);
 
         // Show the auth resources in the output
         this.addOutputs({
             Region: scope.region,
-            UserPoolId: this.auth.cognitoUserPool!.userPoolId!,
-            IdentityPoolId: this.auth.cognitoCfnIdentityPool.ref,
-            UserPoolClientId: this.auth.cognitoUserPoolClient!.userPoolClientId,
+            IdentityPoolId: this.cognitoCfnIdentityPool.ref,
+            UserPoolId: this.userPool.userPoolId,
+            UserPoolClientId: this.userPoolClient.userPoolClientId,
         });
     }
 }

@@ -1,22 +1,29 @@
-import * as sst from '@serverless-stack/resources';
-import { ApiAuthorizationType } from '@serverless-stack/resources';
+import { ApiAuthorizationType, Stack, App, StackProps, Table, Api } from '@serverless-stack/resources';
+import * as apigAuthorizers from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
+import { IUserPool, IUserPoolClient } from "aws-cdk-lib/aws-cognito";
 
 type LocalProps = {
-    table: sst.Table,
+    table: Table,
+    userPool: IUserPool,
+    userPoolClient: IUserPoolClient,
 }
 
-export default class ApiStack extends sst.Stack {
-    api: sst.Api;
+export default class ApiStack extends Stack {
+    api: Api;
 
-    constructor(scope: sst.App, id: string, props?: sst.StackProps & LocalProps) {
+    constructor(scope: App, id: string, props?: StackProps & LocalProps) {
         super(scope, id, props);
 
-        const { table } = props as LocalProps;
+        const { table, userPool, userPoolClient } = props as LocalProps;
 
-        this.api = new sst.Api(this, 'Api', {
+        this.api = new Api(this, 'Api', {
             customDomain:
                 scope.stage === "prod" ? "api.my-serverless-app.com" : undefined,
-            defaultAuthorizationType: ApiAuthorizationType.AWS_IAM,
+            // defaultAuthorizationType: ApiAuthorizationType.AWS_IAM,
+            defaultAuthorizer: new apigAuthorizers.HttpUserPoolAuthorizer("Authorizer", userPool, {
+                userPoolClients: [userPoolClient],
+            }),
+            defaultAuthorizationType: ApiAuthorizationType.JWT,
             defaultFunctionProps: {
                 environment: {
                     TABLE_NAME: table.tableName,
@@ -25,16 +32,32 @@ export default class ApiStack extends sst.Stack {
             },
             cors: true,
             routes: {
-                'POST /notes': 'backend/src/functions/create/lambda.main',
-                'GET /notes/{id}': 'backend/src/functions/get/lambda.main',
-                'GET /notes': 'backend/src/functions/list/lambda.main',
-                'PUT /notes/{id}': 'backend/src/functions/update/lambda.main',
-                'DELETE /notes/{id}': 'backend/src/functions/delete/lambda.main',
-                'POST   /billing': 'backend/src/functions/billing/lambda.main',
+                'POST /notes': {
+                    function: 'backend/src/functions/create/lambda.main',
+                    // authorizationType: ApiAuthorizationType.NONE,
+                },
+                'GET /notes/{id}': {
+                    function: 'backend/src/functions/get/lambda.main',
+                    // authorizationType: ApiAuthorizationType.AWS_IAM
+                },
+                'GET /notes': {
+                    function: 'backend/src/functions/list/lambda.main',
+                    // authorizationType: ApiAuthorizationType.NONE
+                },
+                'PUT /notes/{id}': {
+                    function: 'backend/src/functions/update/lambda.main',
+                    // authorizationType: ApiAuthorizationType.AWS_IAM
+                },
+                'DELETE /notes/{id}': {
+                    function: 'backend/src/functions/delete/lambda.main',
+                    // authorizationType: ApiAuthorizationType.AWS_IAM
+                },
+                'POST /billing': {
+                    function: 'backend/src/functions/billing/lambda.main',
+                    // authorizationType: ApiAuthorizationType.AWS_IAM
+                },
             }
         });
-
-        console.log(this.api.routes);
 
         this.api.attachPermissions([table]);
 

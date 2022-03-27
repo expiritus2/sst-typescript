@@ -31,9 +31,9 @@ export default function Home() {
         onLoad();
     }, [isAuthenticated]);
 
-    function loadNotes() {
+    async function loadNotes() {
         // @ts-ignore
-        return API.get("notes", "/notes");
+        return API.get("notes", "/notes", {});
     }
 
     const getNotes = () => {

@@ -14,6 +14,7 @@ export const main = apiHandler(async (event: APIGatewayProxyEvent) => {
     const description = "Scratch charge";
 
     // Load our secret key from the  environment variables
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
         apiVersion: '2020-08-27'
     });
