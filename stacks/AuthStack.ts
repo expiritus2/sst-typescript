@@ -1,71 +1,55 @@
-import { Stack, Bucket, App, StackProps } from "@serverless-stack/resources";
-import { UserPool, UserPoolClient, IUserPool, IUserPoolClient, CfnIdentityPool } from "aws-cdk-lib/aws-cognito";
+import { Stack, Bucket, App, StackProps, Auth, AuthUserPoolTriggers } from "@serverless-stack/resources";
+import { IUserPool, IUserPoolClient, CfnIdentityPool } from "aws-cdk-lib/aws-cognito";
+import * as iam from "aws-cdk-lib/aws-iam";
 
 type LocalProps = {
     bucket: Bucket;
 }
 
 export default class AuthStack extends Stack {
+    public auth: Auth;
     public userPool: IUserPool;
     public userPoolClient: IUserPoolClient;
     public cognitoCfnIdentityPool: CfnIdentityPool;
+    public userPoolTriggers: AuthUserPoolTriggers;
 
     constructor(scope: App, id: string, props: StackProps & LocalProps) {
         super(scope, id, props);
 
-        // Create User Pool
-        this.userPool = new UserPool(this, "NotesUserPool", {
-            selfSignUpEnabled: true,
-            signInAliases: { email: true },
-            signInCaseSensitive: false,
-            userPoolName: 'Notes User Pool'
-        });
-
-        // Create User Pool Client
-        this.userPoolClient = new UserPoolClient(this, "NotesUserPoolClient", {
-            userPool: this.userPool,
-            authFlows: { userPassword: true },
-            userPoolClientName: 'Notes User Pool Client',
-        });
-
-        this.cognitoCfnIdentityPool = new CfnIdentityPool(this, "NotesIdentityPool", {
-            allowUnauthenticatedIdentities: false,
-            identityPoolName: 'Notes Identity Pool',
-        });
-
-        // const { bucket } = props as LocalProps;
-
         // Create a Cognito User Pool and Identity Pool
-        // this.auth = new Auth(this, "Auth", {
-        //     cognito: {
-        //         userPool: {
-        //             // Users can login with their email and password
-        //             signInAliases: { email: true },
-        //         },
-        //         // triggers: {
-        //         //     preAuthentication: "src/preAuthentication.main",
-        //         //     postAuthentication: "src/postAuthentication.main",
-        //         // },
-        //     },
-        // });
+        this.auth = new Auth(this, "Auth", {
+            cognito: {
+                userPool: {
+                    // Users can login with their email and password
+                    signInAliases: { email: true },
+                    selfSignUpEnabled: true,
+                    signInCaseSensitive: false,
+                    userPoolName: 'Notes User Pool',
+                },
+                userPoolClient: {
+                    authFlows: { userPassword: true },
+                    userPoolClientName: 'Notes User Pool Client',
+                },
+                triggers: {
+                    postConfirmation: 'backend/src/functions/auth/postConfirmation.main'
+                },
+            },
+        });
 
-        // this.auth.attachPermissionsForAuthUsers([
-        //     // Policy granting access to a specific folder in the bucket
-        //     new iam.PolicyStatement({
-        //         actions: ["s3:*"],
-        //         effect: iam.Effect.ALLOW,
-        //         resources: [
-        //             bucket.bucketArn + "/private/${cognito-identity.amazonaws.com:sub}/*",
-        //         ],
-        //     }),
-        // ]);
+        this.auth.attachPermissionsForTrigger('postConfirmation', [
+            new iam.PolicyStatement({
+                actions: ['cognito-idp:AdminAddUserToGroup'],
+                effect: iam.Effect.ALLOW,
+                resources: ['*'],
+            }),
+        ]);
 
         // Show the auth resources in the output
         this.addOutputs({
             Region: scope.region,
-            IdentityPoolId: this.cognitoCfnIdentityPool.ref,
-            UserPoolId: this.userPool.userPoolId,
-            UserPoolClientId: this.userPoolClient.userPoolClientId,
+            IdentityPoolId: this.auth.cognitoCfnIdentityPool.ref,
+            UserPoolId: this.auth.cognitoUserPool!.userPoolId,
+            UserPoolClientId: this.auth.cognitoUserPoolClient!.userPoolClientId,
         });
     }
 }

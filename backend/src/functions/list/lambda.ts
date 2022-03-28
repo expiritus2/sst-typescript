@@ -4,8 +4,8 @@ import * as AWS from 'aws-sdk';
 
 // eslint-disable-next-line
 export const main = apiHandler(async (event: any) => {
-    console.log(event.requestContext.authorizer.jwt.claims);
     const params: AWS.DynamoDB.DocumentClient.QueryInput = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         TableName: process.env.TABLE_NAME!,
         // 'KeyConditionExpression' defines the condition for the query
         // - 'userId = :userId': only return items with matching 'userId'

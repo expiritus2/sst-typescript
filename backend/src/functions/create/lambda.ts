@@ -11,7 +11,6 @@ type CreateBody = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const main = apiHandler(async (event: any) => {
     const data = JSON.parse(event.body) as CreateBody;
-    console.log(event);
     const params: AWS.DynamoDB.DocumentClient.PutItemInput = {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         TableName: process.env.TABLE_NAME!,
