@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@aws-cdk/aws-apigatewayv2-authorizers-alpha": "2.15.0-alpha.0",
+    "@types/data-api-client": "^1.2.4",
     "stripe": "^8.212.0"
   }
 }

@@ -1,4 +1,4 @@
-import { ApiAuthorizationType, Stack, App, StackProps, Table, Api } from '@serverless-stack/resources';
+import { ApiAuthorizationType, Stack, App, StackProps, Api, Table } from '@serverless-stack/resources';
 import * as apigAuthorizers from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
 import { IUserPool, IUserPoolClient } from "aws-cdk-lib/aws-cognito";
 
@@ -19,11 +19,10 @@ export default class ApiStack extends Stack {
         this.api = new Api(this, 'Api', {
             customDomain:
                 scope.stage === "prod" ? "api.my-serverless-app.com" : undefined,
-            // defaultAuthorizationType: ApiAuthorizationType.AWS_IAM,
+            defaultAuthorizationType: ApiAuthorizationType.JWT,
             defaultAuthorizer: new apigAuthorizers.HttpUserPoolAuthorizer("Authorizer", userPool, {
                 userPoolClients: [userPoolClient],
             }),
-            defaultAuthorizationType: ApiAuthorizationType.JWT,
             defaultFunctionProps: {
                 environment: {
                     TABLE_NAME: table.tableName,
@@ -38,23 +37,18 @@ export default class ApiStack extends Stack {
                 },
                 'GET /notes/{id}': {
                     function: 'backend/src/functions/get/lambda.main',
-                    // authorizationType: ApiAuthorizationType.AWS_IAM
                 },
                 'GET /notes': {
                     function: 'backend/src/functions/list/lambda.main',
-                    // authorizationType: ApiAuthorizationType.NONE
                 },
                 'PUT /notes/{id}': {
                     function: 'backend/src/functions/update/lambda.main',
-                    // authorizationType: ApiAuthorizationType.AWS_IAM
                 },
                 'DELETE /notes/{id}': {
                     function: 'backend/src/functions/delete/lambda.main',
-                    // authorizationType: ApiAuthorizationType.AWS_IAM
                 },
                 'POST /billing': {
                     function: 'backend/src/functions/billing/lambda.main',
-                    // authorizationType: ApiAuthorizationType.AWS_IAM
                 },
             }
         });

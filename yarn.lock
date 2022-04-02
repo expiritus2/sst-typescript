@@ -1642,6 +1642,14 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
+"@types/data-api-client@^1.2.4":
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/@types/data-api-client/-/data-api-client-1.2.4.tgz#dccdb619a7b45919e169c6e3b7f412dd6acbb393"
+  integrity sha512-P9bKDGYRyo98fnivAmyK16a/UuqORRZOgMtfusdvS0NLfsY5xIEYWh3lSBedGxF8Jb3pX6hO0X9RGY+YFtSqPw==
+  dependencies:
+    "@types/node" "*"
+    aws-sdk "^2.819.0"
+
 "@types/graceful-fs@^4.1.2":
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/@types/graceful-fs/-/graceful-fs-4.1.5.tgz#21ffba0d98da4350db64891f92a9e5db3cdb4e15"
@@ -2174,6 +2182,21 @@ aws-sdk@*, aws-sdk@^2.1095.0, aws-sdk@^2.761.0:
   version "2.1101.0"
   resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1101.0.tgz#67b685436d909bbe5c608ca890a4abe1128dd573"
   integrity sha512-7lyVb7GXGl8yyu954Qxf6vU6MrcgFlmKyTLBVXJyo3Phn1OB+qOExA55WtSC6gQiQ7e5TeWOn1RUHLg30ywTBA==
+  dependencies:
+    buffer "4.9.2"
+    events "1.1.1"
+    ieee754 "1.1.13"
+    jmespath "0.16.0"
+    querystring "0.2.0"
+    sax "1.2.1"
+    url "0.10.3"
+    uuid "3.3.2"
+    xml2js "0.4.19"
+
+aws-sdk@^2.819.0:
+  version "2.1103.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1103.0.tgz#b0c69b8fd0a31729860bd9218f3c691d06240fcb"
+  integrity sha512-naSAcfoLs55byP8djBHXgZQF3pcsgyX815HSPYjqkzmlukbE9mCVoguUp5rbqLYbLgcnMw4tp2N4ohpBB3voIg==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"

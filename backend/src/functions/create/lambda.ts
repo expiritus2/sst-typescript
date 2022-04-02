@@ -26,5 +26,5 @@ export const main = apiHandler(async (event: any) => {
 
     await dynamoDb.put(params);
 
-    return { body: params.Item };
+    return { body: data };
 });
